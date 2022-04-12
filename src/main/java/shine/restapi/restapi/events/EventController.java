@@ -1,5 +1,7 @@
 package shine.restapi.restapi.events;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,11 +17,15 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Controller
 @RequestMapping(value = "/api/events", produces = MediaTypes.HAL_JSON_VALUE)
+@RequiredArgsConstructor
 public class EventController {
+
+    private final EventRepository eventRepository;
 
     @PostMapping
     public ResponseEntity createEvent(@RequestBody Event event) {
-        URI createdUri = linkTo(EventController.class).slash("{id}").toUri();
+        Event newEvent = this.eventRepository.save(event);
+        URI createdUri = linkTo(EventController.class).slash(newEvent.getId()).toUri();
         event.setId(10);
         return ResponseEntity.created(createdUri).body(event);
     }
