@@ -3,6 +3,9 @@ package shine.restapi.restapi.events;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -75,6 +78,22 @@ class EventTest {
         assertThat(event.isFree()).isFalse();
     }
 
+    @ParameterizedTest
+    @CsvSource({"0,0,true", "100,0,false", "0,100,false"})
+    public void isMaxPriceNotZeroTest(int basePrice, int maxPrice, boolean isFree) {
+        // given
+        Event event = Event.builder()
+                .basePrice(basePrice)
+                .maxPrice(maxPrice)
+                .build();
+
+        // when
+        event.update();
+
+        // then
+        assertThat(event.isFree()).isEqualTo(isFree);
+    }
+
     @Test
     @DisplayName("장소가 있으면 오프라인이 맞다")
     public void isOfflineTest() {
@@ -102,5 +121,20 @@ class EventTest {
 
         // then
         assertThat(event.isOffline()).isFalse();
+    }
+
+    @ParameterizedTest
+    @CsvSource({"강남,true", ",false", "   ,false"})
+    public void isOnlineTest(String location, boolean isOffline) {
+        // given
+        Event event = Event.builder()
+                .location(location)
+                .build();
+
+        // when
+        event.update();
+
+        // then
+        assertThat(event.isOffline()).isEqualTo(isOffline);
     }
 }
