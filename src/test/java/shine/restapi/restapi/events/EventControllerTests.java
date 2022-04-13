@@ -4,12 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -18,8 +15,6 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.LocalDateTime;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -108,8 +103,8 @@ public class EventControllerTests {
     }
 
     @Test
-    @DisplayName("입력 값이 잘못 입력된 경우 에러가 발생하는 테스트")
-    public void createEvent_Bad_Request_Wrong_Input() throws Exception {
+    @DisplayName("입력 값이 잘못 입력된 경우 Field 에러가 발생하는 테스트")
+    public void createEvent_Bad_Request_Field_Error() throws Exception {
         EventDto eventDto = EventDto.builder()
                 .name("Spring")
                 .description("REST API Development with Spring")
@@ -117,6 +112,34 @@ public class EventControllerTests {
                 .closeEnrollmentDateTime(LocalDateTime.of(2018, 11, 25, 14, 21))
                 .beginEventDateTime(LocalDateTime.of(2018, 11, 24, 14, 21))
                 .endEventDateTime(LocalDateTime.of(2018, 11, 23, 14, 21))
+                .basePrice(100)
+                .maxPrice(200)
+                .limitOfEnrollment(100)
+                .location("강남역 D2 스타텁 팩토리")
+                .build();
+
+        mockMvc.perform(post("/api/events")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(eventDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[0].objectName").exists())
+                .andExpect(jsonPath("$[0].field").exists())
+                .andExpect(jsonPath("$[0].defaultMessage").exists())
+                .andExpect(jsonPath("$[0].code").exists())
+                .andExpect(jsonPath("$[0].rejectValue").exists())
+        ;
+    }
+
+    @Test
+    @DisplayName("입력 값이 잘못 입력된 경우 Global 에러가 발생하는 테스트")
+    public void createEvent_Bad_Request_Global_Error() throws Exception {
+        EventDto eventDto = EventDto.builder()
+                .name("Spring")
+                .description("REST API Development with Spring")
+                .beginEnrollmentDateTime(LocalDateTime.of(2018, 11, 23, 14, 21))
+                .closeEnrollmentDateTime(LocalDateTime.of(2018, 11, 24, 14, 21))
+                .beginEventDateTime(LocalDateTime.of(2018, 11, 25, 14, 21))
+                .endEventDateTime(LocalDateTime.of(2018, 11, 26, 14, 21))
                 .basePrice(10000)
                 .maxPrice(200)
                 .limitOfEnrollment(100)
@@ -126,6 +149,12 @@ public class EventControllerTests {
         mockMvc.perform(post("/api/events")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(eventDto)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[0].objectName").exists())
+                .andExpect(jsonPath("$[0].field").doesNotExist())
+                .andExpect(jsonPath("$[0].code").exists())
+                .andExpect(jsonPath("$[0].defaultMessage").exists())
+                .andExpect(jsonPath("$[0].rejectValue").doesNotExist())
+        ;
     }
 }

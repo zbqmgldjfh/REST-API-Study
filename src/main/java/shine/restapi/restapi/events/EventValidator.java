@@ -1,25 +1,27 @@
 package shine.restapi.restapi.events;
 
-import org.springframework.context.annotation.Bean;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.BindingResult;
+import org.springframework.validation.Errors;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Component
 public class EventValidator {
 
-    public void validate(EventDto eventDto, BindingResult bindingResult) {
+    public void validate(EventDto eventDto, Errors errors) {
         if (eventDto.getBasePrice() > eventDto.getMaxPrice() && eventDto.getMaxPrice() != 0) {
-            bindingResult.rejectValue("basePrice", "wrongValue", "BasePrice is wrong.");
-            bindingResult.rejectValue("maxPrice", "wrongValue", "MaxPrice is wrong.");
+            log.info("[EventValidator] Global Error");
+            errors.reject("wrongPrices", "Values of prices are wrong");
         }
 
         LocalDateTime endEventDateTime = eventDto.getEndEventDateTime();
         if (endEventDateTime.isBefore(eventDto.getBeginEventDateTime()) ||
                 endEventDateTime.isBefore(eventDto.getCloseEnrollmentDateTime()) ||
                 endEventDateTime.isBefore(eventDto.getBeginEnrollmentDateTime())) {
-            bindingResult.rejectValue("endEventDateTime", "wrongValue", "endEventDateTime is wrong");
+            log.info("[EventValidator] Fields Error");
+            errors.rejectValue("endEventDateTime", "wrongValue", "endEventDateTime is wrong");
         }
 
         // TODO BeginEventDateTime
