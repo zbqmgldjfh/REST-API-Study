@@ -64,8 +64,8 @@ public class EventControllerTests {
                 .andExpect(jsonPath("id").exists())
                 .andExpect(header().exists(HttpHeaders.LOCATION))
                 .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("id").value(Matchers.not(100)))
-                .andExpect(jsonPath("free").value(Matchers.not(true)))
+                .andExpect(jsonPath("free").value(false))
+                .andExpect(jsonPath("offline").value(true))
                 .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))
                 .andExpect(jsonPath("_links.self").exists())
                 .andExpect(jsonPath("_links.query-events").exists())
@@ -74,7 +74,8 @@ public class EventControllerTests {
                         links(
                                 linkWithRel("self").description("link to self"),
                                 linkWithRel("query-events").description("link to query events"),
-                                linkWithRel("update-events").description("link to update an existing event")
+                                linkWithRel("update-events").description("link to update an existing event"),
+                                linkWithRel("profile").description("link to update an existing event")
                         ),
                         requestHeaders(
                                 headerWithName(HttpHeaders.ACCEPT).description("accept header"),
@@ -96,7 +97,7 @@ public class EventControllerTests {
                                 headerWithName(HttpHeaders.LOCATION).description("Location header"),
                                 headerWithName(HttpHeaders.CONTENT_TYPE).description("Content type")
                         ),
-                        relaxedResponseFields(
+                        responseFields(
                                 fieldWithPath("id").description("id of new event"),
                                 fieldWithPath("name").description("name of new event"),
                                 fieldWithPath("description").description("description of new event"),
@@ -110,7 +111,11 @@ public class EventControllerTests {
                                 fieldWithPath("limitOfEnrollment").description("limitOfEnrollment of new event"),
                                 fieldWithPath("free").description("it tells is this event free or not?"),
                                 fieldWithPath("offline").description("it tells is this event offline or online?"),
-                                fieldWithPath("eventStatus").description("event status")
+                                fieldWithPath("eventStatus").description("event status"),
+                                fieldWithPath("_links.self.href").description("link to self"),
+                                fieldWithPath("_links.query-events.href").description("link to query event list"),
+                                fieldWithPath("_links.update-events.href").description("link to update"),
+                                fieldWithPath("_links.profile.href").description("link to profile")
                         )
                 ))
         ;

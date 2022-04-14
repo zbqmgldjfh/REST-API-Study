@@ -3,6 +3,7 @@ package shine.restapi.restapi.events;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
@@ -43,14 +44,14 @@ public class EventController {
         Event event = modelMapper.map(eventDto, Event.class);
         event.update();
         Event newEvent = eventRepository.save(event);
-
+        event.setId(newEvent.getId());
         WebMvcLinkBuilder selfLinkBuilder = linkTo(EventController.class).slash(newEvent.getId()); // 자신에 대한 link
         URI createdUri = selfLinkBuilder.toUri(); // self 링크를 string으로
 
         EventResource eventResource = new EventResource(event);
         eventResource.add(linkTo(EventController.class).withRel("query-events")); // 이벤트 등록하기 링크
         eventResource.add(selfLinkBuilder.withRel("update-events")); // 업데이트 링크
-
+        eventResource.add(Link.of("/docs/index.html#resource-events-create").withRel("profile")); // 프로필 링크
         return ResponseEntity.created(createdUri).body(eventResource);
     }
 }
