@@ -1,7 +1,6 @@
 package shine.restapi.restapi.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import shine.restapi.restapi.common.RestDocsConfiguration;
@@ -31,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @AutoConfigureRestDocs
 @Import(RestDocsConfiguration.class)
+@ActiveProfiles("test")
 public class EventControllerTests {
 
     @Autowired
@@ -183,11 +184,12 @@ public class EventControllerTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(eventDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$[0].objectName").exists())
-                .andExpect(jsonPath("$[0].field").exists())
-                .andExpect(jsonPath("$[0].defaultMessage").exists())
-                .andExpect(jsonPath("$[0].code").exists())
-                .andExpect(jsonPath("$[0].rejectValue").exists())
+                .andExpect(jsonPath("errors[0].objectName").exists())
+                .andExpect(jsonPath("errors[0].field").exists())
+                .andExpect(jsonPath("errors[0].defaultMessage").exists())
+                .andExpect(jsonPath("errors[0].code").exists())
+                .andExpect(jsonPath("errors[0].rejectValue").exists())
+                .andExpect(jsonPath("_links.index").exists())
         ;
     }
 

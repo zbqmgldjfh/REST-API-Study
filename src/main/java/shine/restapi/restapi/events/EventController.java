@@ -13,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import shine.restapi.restapi.common.ErrorsResource;
 
 import java.net.URI;
 
@@ -31,14 +32,14 @@ public class EventController {
     @PostMapping
     public ResponseEntity createEvent(@Validated @RequestBody EventDto eventDto, Errors errors) {
         if (errors.hasErrors()) {
-            return ResponseEntity.badRequest().body(errors);
+            return badRequest(errors);
         }
         // binding은 성공
 
         eventValidator.validate(eventDto, errors);
         if (errors.hasErrors()) {
             log.info("[Controller 거치는] ");
-            return ResponseEntity.badRequest().body(errors);
+            return badRequest(errors);
         }
 
         Event event = modelMapper.map(eventDto, Event.class);
@@ -53,5 +54,9 @@ public class EventController {
         eventResource.add(selfLinkBuilder.withRel("update-events")); // 업데이트 링크
         eventResource.add(Link.of("/docs/index.html#resource-events-create").withRel("profile")); // 프로필 링크
         return ResponseEntity.created(createdUri).body(eventResource);
+    }
+
+    private ResponseEntity<ErrorsResource> badRequest(Errors errors) {
+        return ResponseEntity.badRequest().body(new ErrorsResource(errors));
     }
 }
